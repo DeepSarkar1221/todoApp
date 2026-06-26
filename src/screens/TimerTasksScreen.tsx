@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -18,14 +19,18 @@ import TimerTaskItem from "../components/TimerTaskItem";
 import TimerTaskModal from "../components/TimerTaskModal";
 import { TimerTask } from "../types";
 
-type FilterType = "all" | "active" | "completed" | "failed" | "not_attempted";
+type FilterType = "all" | "not_attempted" | "completed" | "failed" | "upcoming";
 
-const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+const FILTERS: {
+  key: FilterType;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
   { key: "all", label: "All", icon: "list" },
-  { key: "active", label: "Active", icon: "play-circle" },
+  { key: "not_attempted", label: "Not Attempted", icon: "hourglass" },
   { key: "completed", label: "Completed", icon: "checkmark-circle" },
   { key: "failed", label: "Failed", icon: "close-circle" },
-  { key: "not_attempted", label: "Not Attempted", icon: "hourglass" },
+  { key: "upcoming", label: "Upcoming", icon: "calendar" },
 ];
 
 export default function TimerTasksScreen() {
@@ -45,16 +50,18 @@ export default function TimerTasksScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<TimerTask | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSave = (
     title: string,
     description: string,
     totalTimeSeconds: number,
+    dueDate: number | null,
   ) => {
     if (editingTask) {
-      editTask(editingTask.id, title, description, totalTimeSeconds);
+      editTask(editingTask.id, title, description, totalTimeSeconds, dueDate);
     } else {
-      addTask(title, description, totalTimeSeconds);
+      addTask(title, description, totalTimeSeconds, dueDate);
     }
   };
 
@@ -73,16 +80,26 @@ export default function TimerTasksScreen() {
   const failedTasks = tasks.filter((t) => t.failed);
   const notAttemptedTasks = tasks.filter((t) => !t.isCompleted && !t.failed && !t.isRunning && t.lastStartedAt === null);
 
-  const filteredTasks =
+  const filterApplied =
     activeFilter === "all"
       ? tasks
-      : activeFilter === "active"
-        ? activeTasks
+      : activeFilter === "not_attempted"
+        ? notAttemptedTasks
         : activeFilter === "completed"
           ? completedTasks
           : activeFilter === "failed"
             ? failedTasks
-            : notAttemptedTasks;
+            : tasks.filter((t) => !!t.dueDate && !t.isCompleted && !t.failed);
+
+  const filteredTasks = useMemo(() => {
+    if (!searchQuery.trim()) return filterApplied;
+    const q = searchQuery.toLowerCase().trim();
+    return filterApplied.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+    );
+  }, [filterApplied, searchQuery]);
 
   if (loading) {
     return (
@@ -94,126 +111,153 @@ export default function TimerTasksScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <View
-          style={[
-            styles.statBox,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.borderLight,
-            },
-          ]}
-        >
-          <Text style={[styles.statNumber, { color: colors.primary }]}>
-            {tasks.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Total
-          </Text>
+        {/* Stats Row */}
+        <View style={styles.statsRow}>
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.borderLight,
+              },
+            ]}
+          >
+            <Text style={[styles.statNumber, { color: colors.primary }]}>
+              {tasks.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              Total
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.borderLight,
+              },
+            ]}
+          >
+            <Text style={[styles.statNumber, { color: colors.warning }]}>
+              {activeTasks.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              Active
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.borderLight,
+              },
+            ]}
+          >
+            <Text style={[styles.statNumber, { color: colors.success }]}>
+              {completedTasks.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              Done
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.statBox,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.borderLight,
+              },
+            ]}
+          >
+            <Text style={[styles.statNumber, { color: colors.error }]}>
+              {failedTasks.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              Failed
+            </Text>
+          </View>
         </View>
 
-        <View
-          style={[
-            styles.statBox,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.borderLight,
-            },
-          ]}
+        {/* Filter Chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersRow}
         >
-          <Text style={[styles.statNumber, { color: colors.warning }]}>
-            {activeTasks.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Active
-          </Text>
-        </View>
-
-        <View
-          style={[
-            styles.statBox,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.borderLight,
-            },
-          ]}
-        >
-          <Text style={[styles.statNumber, { color: colors.success }]}>
-            {completedTasks.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Done
-          </Text>
-        </View>
-
-        <View
-          style={[
-            styles.statBox,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.borderLight,
-            },
-          ]}
-        >
-          <Text style={[styles.statNumber, { color: colors.error }]}>
-            {failedTasks.length}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Failed
-          </Text>
-        </View>
-      </View>
-
-      {/* Filter Chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filtersRow}
-      >
-        {FILTERS.map((filter) => {
-          const isActive = activeFilter === filter.key;
-          return (
-            <TouchableOpacity
-              key={filter.key}
-              style={[
-                styles.filterChip,
-                {
-                  backgroundColor: isActive ? colors.primary : colors.card,
-                  borderColor: isActive ? colors.primary : colors.borderLight,
-                },
-              ]}
-              onPress={() => setActiveFilter(filter.key)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={filter.icon}
-                size={16}
-                color={isActive ? colors.textInverse : colors.textSecondary}
-              />
-              <Text
+          {FILTERS.map((filter) => {
+            const isActive = activeFilter === filter.key;
+            return (
+              <TouchableOpacity
+                key={filter.key}
                 style={[
-                  styles.filterLabel,
-                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                  styles.filterChip,
+                  {
+                    backgroundColor: isActive ? colors.primary : colors.card,
+                    borderColor: isActive ? colors.primary : colors.borderLight,
+                  },
                 ]}
+                onPress={() => setActiveFilter(filter.key)}
+                activeOpacity={0.7}
               >
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+                <Ionicons
+                  name={filter.icon}
+                  size={16}
+                  color={isActive ? colors.textInverse : colors.textSecondary}
+                />
+                <Text
+                  style={[
+                    styles.filterLabel,
+                    {
+                      color: isActive
+                        ? colors.textInverse
+                        : colors.textSecondary,
+                    },
+                  ]}
+                >
+                  {filter.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
-      {/* Task List */}
-      {filteredTasks.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="timer-outline" size={48} color={colors.textMuted} />
-          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-            No tasks found
-          </Text>
+        {/* Search Bar */}
+        <View
+          style={[
+            styles.searchContainer,
+            {
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.inputBorder,
+            },
+          ]}
+        >
+          <Ionicons name="search" size={22} color={colors.textMuted} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.textPrimary }]}
+            placeholder="Search tasks..."
+            placeholderTextColor={colors.inputPlaceholder}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            returnKeyType="search"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Ionicons
+                name="close-circle"
+                size={22}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          )}
         </View>
-      ) : (
+
+        {/* Task List */}
         <FlatList
+          style={{ flex: 1 }}
           data={filteredTasks}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -227,26 +271,37 @@ export default function TimerTasksScreen() {
             />
           )}
           contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons
+                name="timer-outline"
+                size={48}
+                color={colors.textMuted}
+              />
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+                No tasks found
+              </Text>
+            </View>
+          }
         />
-      )}
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: colors.primary }]}
-        onPress={handleAdd}
-      >
-        <Ionicons name="add" size={28} color={colors.textInverse} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: colors.primary }]}
+          onPress={handleAdd}
+        >
+          <Ionicons name="add" size={28} color={colors.textInverse} />
+        </TouchableOpacity>
 
-      <TimerTaskModal
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setEditingTask(null);
-        }}
-        onSave={handleSave}
-        editingTask={editingTask}
-      />
-    </View>
+        <TimerTaskModal
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setEditingTask(null);
+          }}
+          onSave={handleSave}
+          editingTask={editingTask}
+        />
+      </View>
   );
 }
 
@@ -289,34 +344,35 @@ const styles = StyleSheet.create({
 
   filtersRow: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.sm,
-    gap: 8,
+    paddingBottom: 0,
+    gap: Spacing.sm,
   },
 
   filterChip: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 3,
-    width: 82,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
+    gap: 4,
+    height: 40,
+    width: 110,
+    borderRadius: 20,
     borderWidth: 1,
   },
 
   filterLabel: {
-    fontSize: Typography.caption.fontSize,
+    fontSize: 13,
     fontWeight: "600",
     marginTop: 0,
   },
 
   list: {
-    padding: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: 4,
     paddingBottom: 100,
   },
 
-  emptyState: {
-    flex: 1,
+  emptyContainer: {
+    paddingTop: Spacing.sm,
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: 100,
@@ -325,6 +381,26 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: Typography.body.fontSize,
     marginTop: Spacing.sm,
+  },
+
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: Spacing.lg,
+    marginBottom: 8,
+    paddingHorizontal: Spacing.lg,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    gap: 10,
+  },
+
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: 52,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
 
   fab: {

@@ -20,8 +20,9 @@ import { useState, useEffect } from "react";
 interface TimerTaskModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (title: string, description: string, totalTimeSeconds: number) => void;
+  onSave: (title: string, description: string, totalTimeSeconds: number, dueDate: number | null) => void;
   editingTask?: TimerTask | null;
+  prefillDate?: number | null;
 }
 
 export default function TimerTaskModal({
@@ -29,6 +30,7 @@ export default function TimerTaskModal({
   onClose,
   onSave,
   editingTask,
+  prefillDate,
 }: TimerTaskModalProps) {
   const { colors } = useTheme();
   const [title, setTitle] = useState("");
@@ -36,11 +38,13 @@ export default function TimerTaskModal({
   const [hours, setHours] = useState("0");
   const [minutes, setMinutes] = useState("0");
   const [seconds, setSeconds] = useState("0");
+  const [dueDate, setDueDate] = useState<number | null>(null);
 
   useEffect(() => {
     if (editingTask) {
       setTitle(editingTask.title);
       setDescription(editingTask.description);
+      setDueDate(editingTask.dueDate || null);
       const h = Math.floor(editingTask.totalTimeSeconds / 3600);
       const m = Math.floor((editingTask.totalTimeSeconds % 3600) / 60);
       const s = editingTask.totalTimeSeconds % 60;
@@ -50,11 +54,12 @@ export default function TimerTaskModal({
     } else {
       setTitle("");
       setDescription("");
+      setDueDate(prefillDate || null);
       setHours("0");
       setMinutes("0");
       setSeconds("0");
     }
-  }, [editingTask, visible]);
+  }, [editingTask, visible, prefillDate]);
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -63,9 +68,11 @@ export default function TimerTaskModal({
     const s = parseInt(seconds) || 0;
     const totalSeconds = h * 3600 + m * 60 + s;
     if (totalSeconds <= 0) return;
-    onSave(title.trim(), description.trim(), totalSeconds);
+    onSave(title.trim(), description.trim(), totalSeconds, dueDate);
     onClose();
   };
+
+  const clearDate = () => setDueDate(null);
 
   const totalSecondsCalc =
     (parseInt(hours) || 0) * 3600 +
@@ -237,6 +244,30 @@ export default function TimerTaskModal({
                 </View>
               </View>
 
+              {/* Due Date Display */}
+              {dueDate && (
+                <View
+                  style={[
+                    styles.dateDisplay,
+                    { backgroundColor: colors.info + "15", borderColor: colors.info + "30" },
+                  ]}
+                >
+                  <Ionicons name="calendar" size={18} color={colors.info} />
+                  <Text style={[styles.dateText, { color: colors.info }]}>
+                    {new Date(dueDate).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </Text>
+                  {!editingTask && (
+                    <TouchableOpacity onPress={clearDate}>
+                      <Ionicons name="close-circle" size={18} color={colors.info} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+
               {totalSecondsCalc > 0 && (
                 <View
                   style={[
@@ -369,6 +400,20 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   previewText: {
+    fontSize: Typography.body.fontSize,
+    fontWeight: "500",
+  },
+  dateDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  dateText: {
+    flex: 1,
     fontSize: Typography.body.fontSize,
     fontWeight: "500",
   },

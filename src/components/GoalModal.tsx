@@ -19,8 +19,9 @@ import { useState, useEffect } from "react";
 interface GoalModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (title: string, description: string) => void;
+  onSave: (title: string, description: string, dueDate: number | null) => void;
   editingGoal?: Goal | null;
+  prefillDate?: number | null;
 }
 
 export default function GoalModal({
@@ -28,28 +29,35 @@ export default function GoalModal({
   onClose,
   onSave,
   editingGoal,
+  prefillDate,
 }: GoalModalProps) {
   const { colors } = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState<number | null>(null);
 
   useEffect(() => {
     if (editingGoal) {
       setTitle(editingGoal.title);
       setDescription(editingGoal.description);
+      setDueDate(editingGoal.dueDate || null);
     } else {
       setTitle("");
       setDescription("");
+      setDueDate(prefillDate || null);
     }
-  }, [editingGoal, visible]);
+  }, [editingGoal, visible, prefillDate]);
 
   const handleSave = () => {
     if (!title.trim()) return;
-    onSave(title.trim(), description.trim());
+    onSave(title.trim(), description.trim(), dueDate);
     setTitle("");
     setDescription("");
+    setDueDate(null);
     onClose();
   };
+
+  const clearDate = () => setDueDate(null);
 
   return (
     <Modal
@@ -131,6 +139,30 @@ export default function GoalModal({
               />
             </View>
 
+            {/* Due Date Display */}
+            {dueDate && (
+              <View
+                style={[
+                  styles.dateDisplay,
+                  { backgroundColor: colors.primary + "15", borderColor: colors.primary + "30" },
+                ]}
+              >
+                <Ionicons name="calendar" size={18} color={colors.primary} />
+                <Text style={[styles.dateText, { color: colors.primary }]}>
+                  {new Date(dueDate).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </Text>
+                {!editingGoal && (
+                  <TouchableOpacity onPress={clearDate}>
+                    <Ionicons name="close-circle" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
             <TouchableOpacity
               style={[
                 styles.saveBtn,
@@ -200,6 +232,20 @@ const styles = StyleSheet.create({
   textArea: {
     minHeight: 80,
     textAlignVertical: "top",
+  },
+  dateDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  dateText: {
+    flex: 1,
+    fontSize: Typography.body.fontSize,
+    fontWeight: "500",
   },
   saveBtn: {
     paddingVertical: Spacing.md,

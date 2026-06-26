@@ -1,6 +1,6 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ScrollView, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTheme } from "../theme/ThemeContext";
 import { Spacing } from "../theme/spacing";
 import { Typography } from "../theme/typography";
@@ -15,12 +15,14 @@ export default function GoalsScreen() {
   const { goals, loading, addGoal, toggleGoal, editGoal, deleteGoal } = useGoals();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "completed" | "upcoming">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSave = (title: string, description: string) => {
+  const handleSave = (title: string, description: string, dueDate: number | null) => {
     if (editingGoal) {
-      editGoal(editingGoal.id, title, description);
+      editGoal(editingGoal.id, title, description, dueDate);
     } else {
-      addGoal(title, description);
+      addGoal(title, description, dueDate);
     }
   };
 
@@ -36,6 +38,24 @@ export default function GoalsScreen() {
 
   const pendingGoals = goals.filter((g) => !g.isCompleted).length;
   const completedGoals = goals.filter((g) => g.isCompleted).length;
+
+  const filterApplied = goals.filter((g) => {
+    if (filter === "all") return true;
+    if (filter === "pending") return !g.isCompleted;
+    if (filter === "completed") return g.isCompleted;
+    if (filter === "upcoming") return !!g.dueDate && !g.isCompleted;
+    return true;
+  });
+
+  const filteredGoals = useMemo(() => {
+    if (!searchQuery.trim()) return filterApplied;
+    const q = searchQuery.toLowerCase().trim();
+    return filterApplied.filter(
+      (g) =>
+        g.title.toLowerCase().includes(q) ||
+        g.description.toLowerCase().includes(q)
+    );
+  }, [filterApplied, searchQuery]);
 
   if (loading) {
     return (
@@ -75,6 +95,79 @@ export default function GoalsScreen() {
         </View>
       </View>
 
+      {/* Filter Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {(["all", "pending", "completed", "upcoming"] as const).map((f) => {
+          const isActive = filter === f;
+          return (
+            <TouchableOpacity
+              key={f}
+              style={[
+                styles.filterChip,
+                {
+                  backgroundColor: isActive ? colors.primary : colors.card,
+                  borderColor: isActive ? colors.primary : colors.borderLight,
+                },
+              ]}
+              onPress={() => setFilter(f)}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={
+                  f === "all"
+                    ? "list"
+                    : f === "pending"
+                      ? "hourglass"
+                      : f === "completed"
+                        ? "checkmark-circle"
+                        : "calendar"
+                }
+                size={14}
+                color={isActive ? colors.textInverse : colors.textSecondary}
+              />
+              <Text
+                style={[
+                  styles.filterLabel,
+                  { color: isActive ? colors.textInverse : colors.textSecondary },
+                ]}
+              >
+                {f === "upcoming" ? "Upcoming" : f.charAt(0).toUpperCase() + f.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Search Bar */}
+      <View
+        style={[
+          styles.searchContainer,
+          {
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.inputBorder,
+          },
+        ]}
+      >
+        <Ionicons name="search" size={18} color={colors.textMuted} />
+        <TextInput
+          style={[styles.searchInput, { color: colors.textPrimary }]}
+          placeholder="Search goals..."
+          placeholderTextColor={colors.inputPlaceholder}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          returnKeyType="search"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery("")}>
+            <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+      </View>
+
       {goals.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="flag-outline" size={64} color={colors.textMuted} />
@@ -85,9 +178,16 @@ export default function GoalsScreen() {
             Create your first daily goal!
           </Text>
         </View>
+      ) : filteredGoals.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="search-outline" size={48} color={colors.textMuted} />
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            No goals match your search
+          </Text>
+        </View>
       ) : (
         <FlatList
-          data={goals}
+          data={filteredGoals}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <GoalItem
@@ -154,6 +254,43 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: Typography.caption.fontSize,
     marginTop: 2,
+  },
+  filterRow: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    height: 36,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    height: 44,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   list: {
     padding: Spacing.lg,

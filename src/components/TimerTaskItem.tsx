@@ -68,6 +68,7 @@ export default function TimerTaskItem({
         task.failed && styles.failedContainer,
       ]}
     >
+      {/* Header: Title + Edit/Delete */}
       <View style={styles.header}>
         <Text
           style={[
@@ -81,6 +82,7 @@ export default function TimerTaskItem({
         </Text>
         <View style={styles.headerActions}>
           <TouchableOpacity
+            style={styles.iconBtn}
             onPress={(e) => {
               e.stopPropagation();
               onEdit(task);
@@ -89,6 +91,7 @@ export default function TimerTaskItem({
             <Ionicons name="pencil" size={18} color={colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity
+            style={styles.iconBtn}
             onPress={(e) => {
               e.stopPropagation();
               onDelete(task.id);
@@ -99,6 +102,7 @@ export default function TimerTaskItem({
         </View>
       </View>
 
+      {/* Description */}
       {task.description ? (
         <Text
           style={[styles.description, { color: colors.textSecondary }]}
@@ -108,35 +112,50 @@ export default function TimerTaskItem({
         </Text>
       ) : null}
 
-      <View style={styles.timerSection}>
-        <View style={styles.timeDisplay}>
-          <Ionicons name="time-outline" size={20} color={colors.primary} />
-          <Text style={[styles.timerText, { color: colors.textPrimary }]}>
-            {formatTime(task.remainingTimeSeconds)}
-          </Text>
-          <Text style={[styles.totalTime, { color: colors.textMuted }]}>
-            / {formatTime(task.totalTimeSeconds)}
+      {/* Due Date */}
+      {task.dueDate && (
+        <View style={styles.dueDateRow}>
+          <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
+          <Text style={[styles.dueDateText, { color: colors.textMuted }]}>
+            {new Date(task.dueDate).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
           </Text>
         </View>
+      )}
 
-        <View
-          style={[
-            styles.progressBar,
-            { backgroundColor: colors.borderLight },
-          ]}
-        >
-          <View
-            style={[
-              styles.progressFill,
-              {
-                backgroundColor: task.isCompleted ? colors.success : colors.primary,
-                width: `${Math.min(progress * 100, 100)}%`,
-              },
-            ]}
-          />
-        </View>
+      {/* Timer Display */}
+      <View style={styles.timerRow}>
+        <Ionicons name="time-outline" size={20} color={colors.primary} />
+        <Text style={[styles.timerText, { color: colors.textPrimary }]}>
+          {formatTime(task.remainingTimeSeconds)}
+        </Text>
+        <Text style={[styles.totalTime, { color: colors.textMuted }]}>
+          / {formatTime(task.totalTimeSeconds)}
+        </Text>
       </View>
 
+      {/* Progress Bar */}
+      <View
+        style={[
+          styles.progressBar,
+          { backgroundColor: colors.borderLight },
+        ]}
+      >
+        <View
+          style={[
+            styles.progressFill,
+            {
+              backgroundColor: task.isCompleted ? colors.success : colors.primary,
+              width: `${Math.min(progress * 100, 100)}%`,
+            },
+          ]}
+        />
+      </View>
+
+      {/* Action Buttons */}
       <View style={styles.controls}>
         {task.isCompleted ? (
           <TouchableOpacity
@@ -146,7 +165,7 @@ export default function TimerTaskItem({
               onReset(task.id);
             }}
           >
-            <Ionicons name="refresh" size={20} color={colors.warning} />
+            <Ionicons name="refresh" size={18} color={colors.warning} />
             <Text style={[styles.controlText, { color: colors.warning }]}>
               Restart
             </Text>
@@ -162,7 +181,7 @@ export default function TimerTaskItem({
               onPause(task.id);
             }}
           >
-            <Ionicons name="pause" size={20} color={colors.error} />
+            <Ionicons name="pause" size={18} color={colors.error} />
             <Text style={[styles.controlText, { color: colors.error }]}>
               Pause
             </Text>
@@ -175,7 +194,7 @@ export default function TimerTaskItem({
               onReset(task.id);
             }}
           >
-            <Ionicons name="refresh" size={20} color={colors.warning} />
+            <Ionicons name="refresh" size={18} color={colors.warning} />
             <Text style={[styles.controlText, { color: colors.warning }]}>
               Restart
             </Text>
@@ -191,39 +210,82 @@ export default function TimerTaskItem({
               onStart(task.id);
             }}
           >
-            <Ionicons name="play" size={20} color={colors.primary} />
+            <Ionicons name="play" size={18} color={colors.primary} />
             <Text style={[styles.controlText, { color: colors.primary }]}>
               Start
             </Text>
           </TouchableOpacity>
         )}
 
+        {/* Reset button for paused/partially completed tasks */}
         {!task.isCompleted && !task.isRunning && task.remainingTimeSeconds < task.totalTimeSeconds && (
           <TouchableOpacity
-            style={[styles.controlBtn, { backgroundColor: colors.surfaceAlt }]}
+            style={[styles.controlBtnSm, { backgroundColor: colors.surfaceAlt }]}
             onPress={(e) => {
               e.stopPropagation();
               onReset(task.id);
             }}
           >
-            <Ionicons name="refresh" size={18} color={colors.textMuted} />
+            <Ionicons name="refresh" size={16} color={colors.textMuted} />
           </TouchableOpacity>
         )}
       </View>
 
-      {task.failed && (
-        <View style={[styles.failedBadge, { backgroundColor: colors.error + "20" }]}>
-          <Ionicons name="close-circle" size={16} color={colors.error} />
-          <Text style={[styles.failedLabel, { color: colors.error }]}>
-            Failed
+      {/* Due Date Badge */}
+      {task.dueDate && (
+        <View
+          style={[
+            styles.dueBadge,
+            {
+              backgroundColor:
+                task.dueDate < Date.now() && !task.isCompleted && !task.failed
+                  ? colors.error + "20"
+                  : colors.warning + "20",
+            },
+          ]}
+        >
+          <Ionicons
+            name="calendar-outline"
+            size={14}
+            color={
+              task.dueDate < Date.now() && !task.isCompleted && !task.failed
+                ? colors.error
+                : colors.warning
+            }
+          />
+          <Text
+            style={[
+              styles.dueBadgeText,
+              {
+                color:
+                  task.dueDate < Date.now() && !task.isCompleted && !task.failed
+                    ? colors.error
+                    : colors.warning,
+              },
+            ]}
+          >
+            Due: {new Date(task.dueDate).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
           </Text>
         </View>
       )}
 
+      {/* Status Badge */}
+      {task.failed && (
+        <View style={[styles.badge, { backgroundColor: colors.error + "20" }]}>
+          <Ionicons name="close-circle" size={14} color={colors.error} />
+          <Text style={[styles.badgeLabel, { color: colors.error }]}>
+            Failed
+          </Text>
+        </View>
+      )}
       {task.isCompleted && !task.failed && (
-        <View style={[styles.completedBadge, { backgroundColor: colors.success + "20" }]}>
-          <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-          <Text style={[styles.completedLabel, { color: colors.success }]}>
+        <View style={[styles.badge, { backgroundColor: colors.success + "20" }]}>
+          <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+          <Text style={[styles.badgeLabel, { color: colors.success }]}>
             Completed
           </Text>
         </View>
@@ -234,7 +296,7 @@ export default function TimerTaskItem({
 
 const styles = StyleSheet.create({
   container: {
-    padding: Spacing.md,
+    padding: 16,
     borderRadius: Radius.md,
     borderWidth: 1,
     marginBottom: Spacing.sm,
@@ -249,7 +311,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Spacing.xs,
+    marginBottom: 12,
   },
   title: {
     fontSize: Typography.body.fontSize,
@@ -263,20 +325,23 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     flexDirection: "row",
-    gap: Spacing.sm,
+    gap: 4,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
   description: {
     fontSize: Typography.bodySmall.fontSize,
-    marginBottom: Spacing.sm,
+    marginBottom: 12,
   },
-  timerSection: {
-    marginBottom: Spacing.sm,
-  },
-  timeDisplay: {
+  timerRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-    marginBottom: Spacing.xs,
+    alignItems: "baseline",
+    gap: 6,
+    marginBottom: 12,
   },
   timerText: {
     fontSize: Typography.h3.fontSize,
@@ -290,6 +355,7 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     overflow: "hidden",
+    marginBottom: 16,
   },
   progressFill: {
     height: "100%",
@@ -297,45 +363,63 @@ const styles = StyleSheet.create({
   },
   controls: {
     flexDirection: "row",
-    gap: Spacing.sm,
+    flexWrap: "wrap",
+    gap: 8,
   },
   controlBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: Radius.full,
+    justifyContent: "center",
+    gap: 6,
+    height: 36,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+  },
+  controlBtnSm: {
+    width: 36,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 18,
   },
   controlText: {
     fontSize: Typography.bodySmall.fontSize,
     fontWeight: "600",
   },
-  completedBadge: {
+  dueBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     borderRadius: Radius.sm,
     alignSelf: "flex-start",
-    marginTop: Spacing.xs,
+    marginTop: 12,
   },
-  completedLabel: {
+  dueBadgeText: {
     fontSize: Typography.caption.fontSize,
     fontWeight: "600",
   },
-  failedBadge: {
+  badge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.xs,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     borderRadius: Radius.sm,
     alignSelf: "flex-start",
-    marginTop: Spacing.xs,
+    marginTop: 12,
   },
-  failedLabel: {
+  dueDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 8,
+  },
+  dueDateText: {
+    fontSize: Typography.caption.fontSize,
+  },
+  badgeLabel: {
     fontSize: Typography.caption.fontSize,
     fontWeight: "600",
   },

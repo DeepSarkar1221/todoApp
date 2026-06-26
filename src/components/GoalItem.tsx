@@ -99,12 +99,54 @@ export default function GoalItem({
       </View>
 
       <View style={styles.metaRow}>
-        <Text style={[styles.date, { color: colors.textMuted }]}>
-          {new Date(goal.createdAt).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-          })}
-        </Text>
+        <View style={styles.metaLeft}>
+          <Ionicons name="time-outline" size={14} color={colors.textMuted} />
+          <Text style={[styles.date, { color: colors.textMuted }]}>
+            {new Date(goal.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+            })}
+          </Text>
+          {goal.dueDate && (
+            <View
+              style={[
+                styles.dueBadge,
+                {
+                  backgroundColor:
+                    goal.dueDate < Date.now() && !goal.isCompleted
+                      ? colors.error + "20"
+                      : colors.warning + "20",
+                },
+              ]}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={12}
+                color={
+                  goal.dueDate < Date.now() && !goal.isCompleted
+                    ? colors.error
+                    : colors.warning
+                }
+              />
+              <Text
+                style={[
+                  styles.dueBadgeText,
+                  {
+                    color:
+                      goal.dueDate < Date.now() && !goal.isCompleted
+                        ? colors.error
+                        : colors.warning,
+                  },
+                ]}
+              >
+                {new Date(goal.dueDate).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </Text>
+            </View>
+          )}
+        </View>
 
         <View style={styles.actions}>
           <TouchableOpacity
@@ -179,6 +221,23 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: Typography.caption.fontSize,
+  },
+  metaLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+  },
+  dueBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.sm,
+  },
+  dueBadgeText: {
+    fontSize: Typography.caption.fontSize,
+    fontWeight: "600",
   },
   actions: {
     flexDirection: "row",

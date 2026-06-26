@@ -35,7 +35,7 @@ export function useGoals() {
   };
 
   const addGoal = useCallback(
-    async (title: string, description: string) => {
+    async (title: string, description: string, dueDate: number | null) => {
       const newGoal: Goal = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         title,
@@ -43,6 +43,7 @@ export function useGoals() {
         createdAt: Date.now(),
         completedAt: null,
         isCompleted: false,
+        dueDate,
       };
       const updated = [newGoal, ...goals];
       setGoals(updated);
@@ -70,9 +71,9 @@ export function useGoals() {
   );
 
   const editGoal = useCallback(
-    async (id: string, title: string, description: string) => {
+    async (id: string, title: string, description: string, dueDate: number | null) => {
       const updated = goals.map((g) =>
-        g.id === id ? { ...g, title, description } : g
+        g.id === id ? { ...g, title, description, dueDate } : g
       );
       setGoals(updated);
       await saveGoals(updated);
@@ -125,7 +126,7 @@ export function useTimerTasks() {
   };
 
   const addTask = useCallback(
-    async (title: string, description: string, totalTimeSeconds: number) => {
+    async (title: string, description: string, totalTimeSeconds: number, dueDate: number | null) => {
       const newTask: TimerTask = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         title,
@@ -139,6 +140,7 @@ export function useTimerTasks() {
         lastStartedAt: null,
         failed: false,
         failedAt: null,
+        dueDate,
       };
       const updated = [newTask, ...tasks];
       setTasks(updated);
@@ -245,7 +247,8 @@ export function useTimerTasks() {
       id: string,
       title: string,
       description: string,
-      totalTimeSeconds: number
+      totalTimeSeconds: number,
+      dueDate: number | null
     ) => {
       const updated = tasks.map((t) =>
         t.id === id
@@ -258,6 +261,7 @@ export function useTimerTasks() {
               isCompleted: false,
               failed: false,
               failedAt: null,
+              dueDate,
             }
           : t
       );

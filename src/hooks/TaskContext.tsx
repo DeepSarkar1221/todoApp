@@ -17,9 +17,9 @@ const TIMER_TASKS_KEY = "@daily_routine_timer_tasks";
 interface GoalsContextValue {
   goals: Goal[];
   loading: boolean;
-  addGoal: (title: string, description: string) => Promise<Goal>;
+  addGoal: (title: string, description: string, dueDate: number | null) => Promise<Goal>;
   toggleGoal: (id: string) => Promise<void>;
-  editGoal: (id: string, title: string, description: string) => Promise<void>;
+  editGoal: (id: string, title: string, description: string, dueDate: number | null) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
 }
 
@@ -61,7 +61,7 @@ function GoalsProvider({ children }: { children: ReactNode }) {
   };
 
   const addGoal = useCallback(
-    async (title: string, description: string) => {
+    async (title: string, description: string, dueDate: number | null) => {
       const newGoal: Goal = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         title,
@@ -69,6 +69,7 @@ function GoalsProvider({ children }: { children: ReactNode }) {
         createdAt: Date.now(),
         completedAt: null,
         isCompleted: false,
+        dueDate,
       };
       const updated = [newGoal, ...goals];
       setGoals(updated);
@@ -96,9 +97,9 @@ function GoalsProvider({ children }: { children: ReactNode }) {
   );
 
   const editGoal = useCallback(
-    async (id: string, title: string, description: string) => {
+    async (id: string, title: string, description: string, dueDate: number | null) => {
       const updated = goals.map((g) =>
-        g.id === id ? { ...g, title, description } : g
+        g.id === id ? { ...g, title, description, dueDate } : g
       );
       setGoals(updated);
       await saveGoals(updated);
@@ -129,14 +130,14 @@ function GoalsProvider({ children }: { children: ReactNode }) {
 interface TimerTasksContextValue {
   tasks: TimerTask[];
   loading: boolean;
-  addTask: (title: string, description: string, totalTimeSeconds: number) => Promise<TimerTask>;
+  addTask: (title: string, description: string, totalTimeSeconds: number, dueDate: number | null) => Promise<TimerTask>;
   updateTaskTime: (id: string, remainingTimeSeconds: number) => Promise<void>;
   startTask: (id: string) => Promise<void>;
   pauseTask: (id: string) => Promise<void>;
   resetTask: (id: string) => Promise<void>;
   markTaskCompleted: (id: string) => Promise<void>;
   markTaskFailed: (id: string) => Promise<void>;
-  editTask: (id: string, title: string, description: string, totalTimeSeconds: number) => Promise<void>;
+  editTask: (id: string, title: string, description: string, totalTimeSeconds: number, dueDate: number | null) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
 }
 
@@ -178,7 +179,7 @@ function TimerTasksProvider({ children }: { children: ReactNode }) {
   };
 
   const addTask = useCallback(
-    async (title: string, description: string, totalTimeSeconds: number) => {
+    async (title: string, description: string, totalTimeSeconds: number, dueDate: number | null) => {
       const newTask: TimerTask = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         title,
@@ -192,6 +193,7 @@ function TimerTasksProvider({ children }: { children: ReactNode }) {
         lastStartedAt: null,
         failed: false,
         failedAt: null,
+        dueDate,
       };
       const updated = [newTask, ...tasks];
       setTasks(updated);
@@ -298,7 +300,7 @@ function TimerTasksProvider({ children }: { children: ReactNode }) {
   );
 
   const editTask = useCallback(
-    async (id: string, title: string, description: string, totalTimeSeconds: number) => {
+    async (id: string, title: string, description: string, totalTimeSeconds: number, dueDate: number | null) => {
       const updated = tasks.map((t) =>
         t.id === id
           ? {
@@ -311,6 +313,7 @@ function TimerTasksProvider({ children }: { children: ReactNode }) {
               completedAt: null,
               failed: false,
               failedAt: null,
+              dueDate,
             }
           : t
       );

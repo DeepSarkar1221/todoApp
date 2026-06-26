@@ -5,6 +5,7 @@ export interface Goal {
   createdAt: number;
   completedAt: number | null;
   isCompleted: boolean;
+  dueDate: number | null;
 }
 
 export interface TimerTask {
@@ -20,6 +21,7 @@ export interface TimerTask {
   lastStartedAt: number | null;
   failed: boolean;
   failedAt: number | null;
+  dueDate: number | null;
 }
 
 export type TabName = "dashboard" | "goals" | "timertasks" | "settings";
