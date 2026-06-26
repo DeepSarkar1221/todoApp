@@ -1,16 +1,20 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { Stack } from "expo-router";
+import { ThemeProvider } from "../theme/ThemeContext";
+import { TaskProvider } from "../hooks/TaskContext";
+import { TimerProvider } from "../hooks/TimerContext";
+import { StatusBar } from "expo-status-bar";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+    <ThemeProvider>
+      <TaskProvider>
+        <TimerProvider>
+          <StatusBar style="auto" />
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          </Stack>
+        </TimerProvider>
+      </TaskProvider>
     </ThemeProvider>
   );
 }
