@@ -20,6 +20,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.VIBRATE",
+        "android.permission.VIBRATE",
+        "android.permission.VIBRATE",
         "android.permission.VIBRATE"
       ],
       "package": "com.kishandeep.todoApp"
@@ -51,6 +53,12 @@
       "eas": {
         "projectId": "38b4b9e8-b88f-47cd-8150-6678a1218d39"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/38b4b9e8-b88f-47cd-8150-6678a1218d39"
     }
   }
 }
