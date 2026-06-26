@@ -168,39 +168,41 @@ export default function GoalsScreen() {
         )}
       </View>
 
-      {goals.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="flag-outline" size={64} color={colors.textMuted} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
-            No Goals Yet
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            Create your first daily goal!
-          </Text>
-        </View>
-      ) : filteredGoals.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="search-outline" size={48} color={colors.textMuted} />
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            No goals match your search
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredGoals}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <GoalItem
-              goal={item}
-              onToggle={toggleGoal}
-              onEdit={handleEdit}
-              onDelete={deleteGoal}
-            />
-          )}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      <FlatList
+        style={{ flex: 1 }}
+        data={filteredGoals}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <GoalItem
+            goal={item}
+            onToggle={toggleGoal}
+            onEdit={handleEdit}
+            onDelete={deleteGoal}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          goals.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="flag-outline" size={64} color={colors.textMuted} />
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+                No Goals Yet
+              </Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+                Create your first daily goal!
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="search-outline" size={48} color={colors.textMuted} />
+              <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+                No goals match your search
+              </Text>
+            </View>
+          )
+        }
+      />
 
       {/* FAB */}
       <TouchableOpacity
@@ -279,6 +281,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: Spacing.lg,
     marginBottom: Spacing.sm,
+    marginTop: -490,
     paddingHorizontal: Spacing.md,
     height: 44,
     borderRadius: 22,
@@ -293,7 +296,8 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   list: {
-    padding: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: 4,
     paddingBottom: 100,
   },
   emptyState: {

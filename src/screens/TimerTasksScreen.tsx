@@ -388,6 +388,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: Spacing.lg,
     marginBottom: 8,
+    marginTop: -490,
     paddingHorizontal: Spacing.lg,
     height: 52,
     borderRadius: 26,
