@@ -16,6 +16,7 @@ import { Typography } from "../theme/typography";
 import { Radius } from "../theme/radius";
 import { TimerTask } from "../types";
 import { useState, useEffect } from "react";
+import { useToast } from "./Toast";
 
 interface TimerTaskModalProps {
   visible: boolean;
@@ -33,6 +34,7 @@ export default function TimerTaskModal({
   prefillDate,
 }: TimerTaskModalProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [hours, setHours] = useState("0");
@@ -69,6 +71,7 @@ export default function TimerTaskModal({
     const totalSeconds = h * 3600 + m * 60 + s;
     if (totalSeconds <= 0) return;
     onSave(title.trim(), description.trim(), totalSeconds, dueDate);
+    showToast(editingTask ? "Timer task updated!" : "Timer task created!", "success");
     onClose();
   };
 
@@ -244,7 +247,6 @@ export default function TimerTaskModal({
                 </View>
               </View>
 
-              {/* Due Date Display */}
               {dueDate && (
                 <View
                   style={[

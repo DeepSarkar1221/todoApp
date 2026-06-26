@@ -4,12 +4,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Themes, AppColors, ThemeKey } from "./colors";
 
 const THEME_KEY = "@app_theme_key";
+const MODE_KEY = "@app_mode_key";
+
+export type AppMode = "system" | "light" | "dark";
 
 type ThemeContextValue = {
   colors: AppColors;
   isDark: boolean;
   themeKey: ThemeKey;
   setThemeKey: (key: ThemeKey) => Promise<void>;
+  mode: AppMode;
+  setMode: (mode: AppMode) => Promise<void>;
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -17,23 +22,29 @@ const ThemeContext = createContext<ThemeContextValue>({
   isDark: false,
   themeKey: "green",
   setThemeKey: async () => {},
+  mode: "system",
+  setMode: async () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
-  const isDark = systemScheme === "dark";
   const [themeKey, setThemeKeyState] = useState<ThemeKey>("green");
+  const [mode, setModeState] = useState<AppMode>("system");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(THEME_KEY);
-        if (saved && saved in Themes) {
-          setThemeKeyState(saved as ThemeKey);
+        const savedTheme = await AsyncStorage.getItem(THEME_KEY);
+        if (savedTheme && savedTheme in Themes) {
+          setThemeKeyState(savedTheme as ThemeKey);
+        }
+        const savedMode = await AsyncStorage.getItem(MODE_KEY);
+        if (savedMode === "light" || savedMode === "dark" || savedMode === "system") {
+          setModeState(savedMode as AppMode);
         }
       } catch (e) {
-        console.error("Failed to load theme", e);
+        console.error("Failed to load settings", e);
       } finally {
         setLoaded(true);
       }
@@ -49,6 +60,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const setMode = useCallback(async (newMode: AppMode) => {
+    setModeState(newMode);
+    try {
+      await AsyncStorage.setItem(MODE_KEY, newMode);
+    } catch (e) {
+      console.error("Failed to save mode", e);
+    }
+  }, []);
+
+  const isDark = mode === "system" ? systemScheme === "dark" : mode === "dark";
   const theme = Themes[themeKey];
 
   const value = useMemo(
@@ -57,12 +78,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       isDark,
       themeKey,
       setThemeKey,
+      mode,
+      setMode,
     }),
-    [isDark, themeKey, setThemeKey]
+    [isDark, themeKey, setThemeKey, mode, setMode]
   );
 
   if (!loaded) {
-    return null; // prevent flash of wrong theme
+    return null;
   }
 
   return (

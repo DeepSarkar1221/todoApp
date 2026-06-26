@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: -490,
     paddingHorizontal: Spacing.lg,
-    height: 52,
+    height: 45,
     borderRadius: 26,
     borderWidth: 1,
     gap: 10,

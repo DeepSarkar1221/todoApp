@@ -15,6 +15,7 @@ import { Typography } from "../theme/typography";
 import { Radius } from "../theme/radius";
 import { Goal } from "../types";
 import { useState, useEffect } from "react";
+import { useToast } from "./Toast";
 
 interface GoalModalProps {
   visible: boolean;
@@ -32,6 +33,7 @@ export default function GoalModal({
   prefillDate,
 }: GoalModalProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<number | null>(null);
@@ -51,6 +53,7 @@ export default function GoalModal({
   const handleSave = () => {
     if (!title.trim()) return;
     onSave(title.trim(), description.trim(), dueDate);
+    showToast(editingGoal ? "Goal updated!" : "Goal created!", "success");
     setTitle("");
     setDescription("");
     setDueDate(null);

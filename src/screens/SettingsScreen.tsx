@@ -1,18 +1,19 @@
+import React, { useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme, AppMode } from "../theme/ThemeContext";
 import { Spacing } from "../theme/spacing";
 import { Typography } from "../theme/typography";
 import { Radius } from "../theme/radius";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemeKey, Themes } from "../theme/colors";
+import AlertModal from "../components/AlertModal";
 
 const THEME_OPTIONS: { key: ThemeKey; label: string; color: string }[] = [
   { key: "green", label: "Green", color: "#386b01" },
@@ -21,27 +22,26 @@ const THEME_OPTIONS: { key: ThemeKey; label: string; color: string }[] = [
   { key: "skyblue", label: "Sky Blue", color: "#00658f" },
   { key: "purple", label: "Purple", color: "#8d4ea3" },
   { key: "sunset", label: "Sunset", color: "#c75120" },
+  { key: "cherry", label: "Cherry Red", color: "#b52735" },
+];
+
+const MODE_OPTIONS: { key: AppMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: "light", label: "Light Mode", icon: "sunny" },
+  { key: "dark", label: "Dark Mode", icon: "moon" },
+  { key: "system", label: "System Theme", icon: "phone-portrait" },
 ];
 
 export default function SettingsScreen() {
-  const { colors, isDark, themeKey, setThemeKey } = useTheme();
+  const { colors, isDark, themeKey, setThemeKey, mode, setMode } = useTheme();
+  const [alertVisible, setAlertVisible] = useState(false);
 
   const handleClearAllData = () => {
-    Alert.alert(
-      "Clear All Data",
-      "This will delete all goals and timer tasks permanently.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete All",
-          style: "destructive",
-          onPress: async () => {
-            await AsyncStorage.clear();
-            Alert.alert("Done", "All data has been cleared.");
-          },
-        },
-      ]
-    );
+    setAlertVisible(true);
+  };
+
+  const confirmClearAll = async () => {
+    await AsyncStorage.clear();
+    setAlertVisible(false);
   };
 
   return (
@@ -62,32 +62,44 @@ export default function SettingsScreen() {
           },
         ]}
       >
-        <View style={styles.settingRow}>
-          <View style={styles.settingLeft}>
-            <View
+        {MODE_OPTIONS.map((option, index) => {
+          const isActive = mode === option.key;
+          return (
+            <TouchableOpacity
+              key={option.key}
               style={[
-                styles.iconBox,
-                { backgroundColor: colors.warning + "20" },
+                styles.modeRow,
+                index < MODE_OPTIONS.length - 1 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.borderLight,
+                },
               ]}
+              onPress={() => setMode(option.key)}
+              activeOpacity={0.7}
             >
-              <Ionicons
-                name={isDark ? "moon" : "sunny"}
-                size={20}
-                color={colors.warning}
-              />
-            </View>
-            <View>
-              <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>
-                Dark Mode
-              </Text>
-              <Text style={[styles.settingDesc, { color: colors.textMuted }]}>
-                {isDark
-                  ? "Dark theme is enabled (system)"
-                  : "Light theme is enabled (system)"}
-              </Text>
-            </View>
-          </View>
-        </View>
+              <View style={styles.settingLeft}>
+                <View
+                  style={[
+                    styles.iconBox,
+                    { backgroundColor: isActive ? colors.primary + "20" : colors.warning + "20" },
+                  ]}
+                >
+                  <Ionicons
+                    name={option.icon}
+                    size={20}
+                    color={isActive ? colors.primary : colors.warning}
+                  />
+                </View>
+                <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>
+                  {option.label}
+                </Text>
+              </View>
+              {isActive && (
+                <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Color Themes */}
@@ -129,11 +141,7 @@ export default function SettingsScreen() {
                 </Text>
               </View>
               {isActive && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={22}
-                  color={colors.primary}
-                />
+                <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
               )}
             </TouchableOpacity>
           );
@@ -156,10 +164,7 @@ export default function SettingsScreen() {
         <View style={styles.settingRow}>
           <View style={styles.settingLeft}>
             <View
-              style={[
-                styles.iconBox,
-                { backgroundColor: colors.info + "20" },
-              ]}
+              style={[styles.iconBox, { backgroundColor: colors.info + "20" }]}
             >
               <Ionicons name="information-circle" size={20} color={colors.info} />
             </View>
@@ -179,10 +184,7 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.settingRow} onPress={handleClearAllData}>
           <View style={styles.settingLeft}>
             <View
-              style={[
-                styles.iconBox,
-                { backgroundColor: colors.error + "20" },
-              ]}
+              style={[styles.iconBox, { backgroundColor: colors.error + "20" }]}
             >
               <Ionicons name="trash" size={20} color={colors.error} />
             </View>
@@ -244,7 +246,7 @@ export default function SettingsScreen() {
           <View style={styles.featureRow}>
             <Ionicons name="checkmark-circle" size={16} color={colors.success} />
             <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-              6 color themes to choose from
+              7 color themes to choose from
             </Text>
           </View>
           <View style={styles.featureRow}>
@@ -255,18 +257,26 @@ export default function SettingsScreen() {
           </View>
         </View>
       </View>
+
+      {/* Clear Data Alert Modal */}
+      <AlertModal
+        visible={alertVisible}
+        title="Clear All Data"
+        message="This will permanently delete all your goals and timer tasks. This action cannot be undone."
+        confirmLabel="Delete All"
+        cancelLabel="Cancel"
+        icon="trash-outline"
+        destructive
+        onConfirm={confirmClearAll}
+        onCancel={() => setAlertVisible(false)}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
-  },
+  container: { flex: 1 },
+  content: { padding: Spacing.lg, paddingBottom: Spacing.xxxl },
   sectionTitle: {
     fontSize: Typography.caption.fontSize,
     fontWeight: "600",
@@ -275,11 +285,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
     marginLeft: Spacing.xs,
   },
-  section: {
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
+  section: { borderRadius: Radius.lg, borderWidth: 1, overflow: "hidden" },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -299,18 +305,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  settingLabel: {
-    fontSize: Typography.body.fontSize,
-    fontWeight: "500",
-  },
-  settingDesc: {
-    fontSize: Typography.caption.fontSize,
-    marginTop: 1,
-  },
-  divider: {
-    height: 1,
-    marginHorizontal: Spacing.lg,
-  },
+  settingLabel: { fontSize: Typography.body.fontSize, fontWeight: "500" },
+  settingDesc: { fontSize: Typography.caption.fontSize, marginTop: 1 },
+  divider: { height: 1, marginHorizontal: Spacing.lg },
   themeRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -318,24 +315,17 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
   },
-  themeLeft: {
+  themeLeft: { flexDirection: "row", alignItems: "center", gap: Spacing.md },
+  themeDot: { width: 28, height: 28, borderRadius: 14 },
+  modeRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
+    justifyContent: "space-between",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
   },
-  themeDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-  },
-  themeLabel: {
-    fontSize: Typography.body.fontSize,
-    fontWeight: "500",
-  },
-  aboutContent: {
-    alignItems: "center",
-    padding: Spacing.xl,
-  },
+  themeLabel: { fontSize: Typography.body.fontSize, fontWeight: "500" },
+  aboutContent: { alignItems: "center", padding: Spacing.xl },
   aboutTitle: {
     fontSize: Typography.h3.fontSize,
     fontWeight: "600",
@@ -352,12 +342,6 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xl,
     gap: Spacing.sm,
   },
-  featureRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-  },
-  featureText: {
-    fontSize: Typography.bodySmall.fontSize,
-  },
+  featureRow: { flexDirection: "row", alignItems: "center", gap: Spacing.sm },
+  featureText: { fontSize: Typography.bodySmall.fontSize },
 });

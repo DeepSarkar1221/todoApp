@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { ThemeProvider } from "../theme/ThemeContext";
 import { TaskProvider } from "../hooks/TaskContext";
 import { TimerProvider } from "../hooks/TimerContext";
+import { ToastProvider } from "../components/Toast";
 import { StatusBar } from "expo-status-bar";
 
 export default function RootLayout() {
@@ -9,10 +10,12 @@ export default function RootLayout() {
     <ThemeProvider>
       <TaskProvider>
         <TimerProvider>
-          <StatusBar style="auto" />
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-          </Stack>
+          <ToastProvider>
+            <StatusBar style="auto" />
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+            </Stack>
+          </ToastProvider>
         </TimerProvider>
       </TaskProvider>
     </ThemeProvider>
