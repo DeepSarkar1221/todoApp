@@ -1,128 +1,564 @@
 // src/theme/colors.ts
-// Colors migrated from src/constants/colors.ts - using LightColors/DarkColors format
 
-export const LightColors = {
+export interface ColorSet {
+  name: string;
   // Brand
-  primary: "#386b01", // M3 Expressive Light Primary (Vibrant Green)
-  primaryDark: "#183800", // M3 On Primary Container / Darker accent
-  primaryLight: "#54910f", // M3 Lighter vibrant green accent
+  primary: string;
+  primaryDark: string;
+  primaryLight: string;
 
   // Backgrounds
-  background: "#f7f9ee", // M3 Expressive Light Background (Greenish-tinted neutral)
-  surface: "#f7f9ee", // M3 Surface
-  surfaceSecondary: "#ffffff", // M3 Surface Bright
-  surfaceAlt: "#edf2e0", // M3 Surface Variant
+  background: string;
+  surface: string;
+  surfaceSecondary: string;
+  surfaceAlt: string;
 
   // Text
-  textPrimary: "#131f00", // M3 On Surface / On Primary Container
-  textDark: "#131f00", // M3 On Surface
-  textSecondary: "#43493e", // M3 On Surface Variant
-  textMuted: "#74796e", // M3 Outline
-  textInverse: "#ffffff", // M3 On Primary / Inverse On Surface
+  textPrimary: string;
+  textDark: string;
+  textSecondary: string;
+  textMuted: string;
+  textInverse: string;
 
   // Borders
-  border: "#c3c8bb", // M3 Outline Variant
-  borderLight: "#e0e4d6", // M3 Lighter Outline / Surface Container High
-  divider: "#c3c8bb", // M3 Outline Variant
-  borderNeutral: "#edf2e0", // M3 Surface Variant
+  border: string;
+  borderLight: string;
+  divider: string;
+  borderNeutral: string;
 
   // States
-  success: "#386b01", // M3 Primary
-  warning: "#865300", // M3 Expressive Amber/Orange
-  error: "#ba1a1a", // M3 Standard Error
-  info: "#006684", // M3 Expressive Blue/Cyan
+  success: string;
+  warning: string;
+  error: string;
+  info: string;
 
   // Navigation
-  tabBar: "#edf2e0", // M3 Surface Container
-  tabActive: "#386b01", // M3 Primary
-  tabInactive: "#43493e", // M3 On Surface Variant
+  tabBar: string;
+  tabActive: string;
+  tabInactive: string;
 
   // Cards
-  card: "#f1f4e7", // M3 Surface Container Low
-  cardSecondary: "#edf2e0", // M3 Surface Container
+  card: string;
+  cardSecondary: string;
 
   // Inputs
-  inputBackground: "#edf2e0", // M3 Surface Container
-  inputBorder: "#74796e", // M3 Outline
-  inputPlaceholder: "#74796e", // M3 Outline
+  inputBackground: string;
+  inputBorder: string;
+  inputPlaceholder: string;
 
   // Overlay
-  overlay: "rgba(28, 29, 23, 0.35)", // M3 Scrim with transparency
+  overlay: string;
 
-  // Attendance
-  present: "#386b01", // M3 Primary
-  absent: "#ba1a1a", // M3 Error
-  late: "#865300", // M3 Warning/Amber
-
-  // Notice
-  noticeInfo: "#006684", // M3 Info
-  noticeUrgent: "#ba1a1a", // M3 Error
-
-  // Assignment
-  assignmentPending: "#865300", // M3 Warning
-  assignmentSubmitted: "#386b01", // M3 Primary
-};
-
-export const DarkColors = {
-  // Brand
-  primary: "#9cd65d", // M3 Expressive Dark Primary
-  primaryDark: "#234e00", // M3 Primary Container
-  primaryLight: "#b8f377", // M3 Lighter variant
-
-  // Backgrounds
-  background: "#0b1014", // M3 Expressive Dark Background
-  surface: "#10140b", // M3 Dark Surface
-  surfaceSecondary: "#1c2117", // M3 Surface Container
-  surfaceAlt: "#181c13", // M3 Surface Container Low
-
-  // Text
-  textPrimary: "#e2e3d8", // M3 On Surface
-  textDark: "#e2e3d8", // M3 On Surface
-  textSecondary: "#c3c8bb", // M3 On Surface Variant
-  textMuted: "#8d9286", // M3 Outline
-  textInverse: "#131f00", // M3 Inverse On Surface / On Primary
-
-  // Borders
-  border: "#43493e", // M3 Outline Variant
-  borderLight: "#2d3228", // M3 Surface Container High
-  divider: "#43493e", // M3 Outline Variant
-  borderNeutral: "#1c2117", // M3 Surface Container
-
-  // States
-  success: "#9cd65d", // M3 Primary
-  warning: "#ffb961", // M3 Dark Amber
-  error: "#ffb4ab", // M3 Dark Error
-  info: "#66d3ff", // M3 Dark Cyan/Blue
-
-  // Navigation
-  tabBar: "#181c13", // M3 Surface Container Low
-  tabActive: "#9cd65d", // M3 Primary
-  tabInactive: "#8d9286", // M3 Outline
-
-  // Cards
-  card: "#1c2117", // M3 Surface Container
-  cardSecondary: "#22271c", // M3 Surface Container High
-
-  // Inputs
-  inputBackground: "#1c2117", // M3 Surface Container
-  inputBorder: "#8d9286", // M3 Outline
-  inputPlaceholder: "#8d9286", // M3 Outline
-
-  // Overlay
-  overlay: "rgba(0, 0, 0, 0.5)", // M3 Scrim
-
-  // Attendance
-  present: "#9cd65d", // M3 Primary
-  absent: "#ffb4ab", // M3 Error
-  late: "#ffb961", // M3 Warning
+  // Attendance (kept for compatibility)
+  present: string;
+  absent: string;
+  late: string;
 
   // Notice
-  noticeInfo: "#66d3ff", // M3 Info
-  noticeUrgent: "#ffb4ab", // M3 Error
+  noticeInfo: string;
+  noticeUrgent: string;
 
   // Assignment
-  assignmentPending: "#ffb961", // M3 Warning
-  assignmentSubmitted: "#9cd65d", // M3 Primary
+  assignmentPending: string;
+  assignmentSubmitted: string;
+}
+
+export type ThemeKey = "green" | "pink" | "pista" | "skyblue" | "purple" | "sunset";
+
+export const Themes: Record<ThemeKey, { light: ColorSet; dark: ColorSet }> = {
+  // ==================== Original Green Theme ====================
+  green: {
+    light: {
+      name: "Green",
+      primary: "#386b01",
+      primaryDark: "#183800",
+      primaryLight: "#54910f",
+      background: "#f7f9ee",
+      surface: "#f7f9ee",
+      surfaceSecondary: "#ffffff",
+      surfaceAlt: "#edf2e0",
+      textPrimary: "#131f00",
+      textDark: "#131f00",
+      textSecondary: "#43493e",
+      textMuted: "#74796e",
+      textInverse: "#ffffff",
+      border: "#c3c8bb",
+      borderLight: "#e0e4d6",
+      divider: "#c3c8bb",
+      borderNeutral: "#edf2e0",
+      success: "#386b01",
+      warning: "#865300",
+      error: "#ba1a1a",
+      info: "#006684",
+      tabBar: "#edf2e0",
+      tabActive: "#386b01",
+      tabInactive: "#43493e",
+      card: "#f1f4e7",
+      cardSecondary: "#edf2e0",
+      inputBackground: "#edf2e0",
+      inputBorder: "#74796e",
+      inputPlaceholder: "#74796e",
+      overlay: "rgba(28, 29, 23, 0.35)",
+      present: "#386b01",
+      absent: "#ba1a1a",
+      late: "#865300",
+      noticeInfo: "#006684",
+      noticeUrgent: "#ba1a1a",
+      assignmentPending: "#865300",
+      assignmentSubmitted: "#386b01",
+    },
+    dark: {
+      name: "Green",
+      primary: "#9cd65d",
+      primaryDark: "#234e00",
+      primaryLight: "#b8f377",
+      background: "#0b1014",
+      surface: "#10140b",
+      surfaceSecondary: "#1c2117",
+      surfaceAlt: "#181c13",
+      textPrimary: "#e2e3d8",
+      textDark: "#e2e3d8",
+      textSecondary: "#c3c8bb",
+      textMuted: "#8d9286",
+      textInverse: "#131f00",
+      border: "#43493e",
+      borderLight: "#2d3228",
+      divider: "#43493e",
+      borderNeutral: "#1c2117",
+      success: "#9cd65d",
+      warning: "#ffb961",
+      error: "#ffb4ab",
+      info: "#66d3ff",
+      tabBar: "#181c13",
+      tabActive: "#9cd65d",
+      tabInactive: "#8d9286",
+      card: "#1c2117",
+      cardSecondary: "#22271c",
+      inputBackground: "#1c2117",
+      inputBorder: "#8d9286",
+      inputPlaceholder: "#8d9286",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      present: "#9cd65d",
+      absent: "#ffb4ab",
+      late: "#ffb961",
+      noticeInfo: "#66d3ff",
+      noticeUrgent: "#ffb4ab",
+      assignmentPending: "#ffb961",
+      assignmentSubmitted: "#9cd65d",
+    },
+  },
+
+  // ==================== Sweet Pink Theme ====================
+  pink: {
+    light: {
+      name: "Sweet Pink",
+      primary: "#a13d5c",
+      primaryDark: "#5c1130",
+      primaryLight: "#c95f7f",
+      background: "#fdf2f6",
+      surface: "#fdf2f6",
+      surfaceSecondary: "#ffffff",
+      surfaceAlt: "#fce4eb",
+      textPrimary: "#2c131c",
+      textDark: "#2c131c",
+      textSecondary: "#5e4a50",
+      textMuted: "#887077",
+      textInverse: "#ffffff",
+      border: "#d4bcc3",
+      borderLight: "#ecd9df",
+      divider: "#d4bcc3",
+      borderNeutral: "#fce4eb",
+      success: "#a13d5c",
+      warning: "#9b6100",
+      error: "#ba1a1a",
+      info: "#006684",
+      tabBar: "#fce4eb",
+      tabActive: "#a13d5c",
+      tabInactive: "#5e4a50",
+      card: "#fdf2f6",
+      cardSecondary: "#fce4eb",
+      inputBackground: "#fce4eb",
+      inputBorder: "#887077",
+      inputPlaceholder: "#887077",
+      overlay: "rgba(44, 19, 28, 0.35)",
+      present: "#a13d5c",
+      absent: "#ba1a1a",
+      late: "#9b6100",
+      noticeInfo: "#006684",
+      noticeUrgent: "#ba1a1a",
+      assignmentPending: "#9b6100",
+      assignmentSubmitted: "#a13d5c",
+    },
+    dark: {
+      name: "Sweet Pink",
+      primary: "#ffb1c0",
+      primaryDark: "#7a2442",
+      primaryLight: "#ffd8df",
+      background: "#1b1014",
+      surface: "#1b1014",
+      surfaceSecondary: "#2a1c21",
+      surfaceAlt: "#23161b",
+      textPrimary: "#ede0e3",
+      textDark: "#ede0e3",
+      textSecondary: "#ccc1c4",
+      textMuted: "#a08b90",
+      textInverse: "#2c131c",
+      border: "#5e4a50",
+      borderLight: "#3d2c31",
+      divider: "#5e4a50",
+      borderNeutral: "#2a1c21",
+      success: "#ffb1c0",
+      warning: "#ffb961",
+      error: "#ffb4ab",
+      info: "#66d3ff",
+      tabBar: "#23161b",
+      tabActive: "#ffb1c0",
+      tabInactive: "#a08b90",
+      card: "#2a1c21",
+      cardSecondary: "#35252b",
+      inputBackground: "#2a1c21",
+      inputBorder: "#a08b90",
+      inputPlaceholder: "#a08b90",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      present: "#ffb1c0",
+      absent: "#ffb4ab",
+      late: "#ffb961",
+      noticeInfo: "#66d3ff",
+      noticeUrgent: "#ffb4ab",
+      assignmentPending: "#ffb961",
+      assignmentSubmitted: "#ffb1c0",
+    },
+  },
+
+  // ==================== Pista/Teal Green Theme ====================
+  pista: {
+    light: {
+      name: "Pista",
+      primary: "#007a65",
+      primaryDark: "#00382c",
+      primaryLight: "#00a88b",
+      background: "#f0f9f6",
+      surface: "#f0f9f6",
+      surfaceSecondary: "#ffffff",
+      surfaceAlt: "#dff2ec",
+      textPrimary: "#00201a",
+      textDark: "#00201a",
+      textSecondary: "#3a4e49",
+      textMuted: "#6b7f79",
+      textInverse: "#ffffff",
+      border: "#bccfc9",
+      borderLight: "#d9e8e2",
+      divider: "#bccfc9",
+      borderNeutral: "#dff2ec",
+      success: "#007a65",
+      warning: "#7e5e00",
+      error: "#ba1a1a",
+      info: "#006684",
+      tabBar: "#dff2ec",
+      tabActive: "#007a65",
+      tabInactive: "#3a4e49",
+      card: "#f0f9f6",
+      cardSecondary: "#dff2ec",
+      inputBackground: "#dff2ec",
+      inputBorder: "#6b7f79",
+      inputPlaceholder: "#6b7f79",
+      overlay: "rgba(0, 32, 26, 0.35)",
+      present: "#007a65",
+      absent: "#ba1a1a",
+      late: "#7e5e00",
+      noticeInfo: "#006684",
+      noticeUrgent: "#ba1a1a",
+      assignmentPending: "#7e5e00",
+      assignmentSubmitted: "#007a65",
+    },
+    dark: {
+      name: "Pista",
+      primary: "#54ddc0",
+      primaryDark: "#005142",
+      primaryLight: "#82fcde",
+      background: "#081f1b",
+      surface: "#081f1b",
+      surfaceSecondary: "#122c27",
+      surfaceAlt: "#0d2521",
+      textPrimary: "#d5f5ee",
+      textDark: "#d5f5ee",
+      textSecondary: "#b2ccc4",
+      textMuted: "#819e96",
+      textInverse: "#00201a",
+      border: "#3a4e49",
+      borderLight: "#213a35",
+      divider: "#3a4e49",
+      borderNeutral: "#122c27",
+      success: "#54ddc0",
+      warning: "#ffb961",
+      error: "#ffb4ab",
+      info: "#66d3ff",
+      tabBar: "#0d2521",
+      tabActive: "#54ddc0",
+      tabInactive: "#819e96",
+      card: "#122c27",
+      cardSecondary: "#183733",
+      inputBackground: "#122c27",
+      inputBorder: "#819e96",
+      inputPlaceholder: "#819e96",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      present: "#54ddc0",
+      absent: "#ffb4ab",
+      late: "#ffb961",
+      noticeInfo: "#66d3ff",
+      noticeUrgent: "#ffb4ab",
+      assignmentPending: "#ffb961",
+      assignmentSubmitted: "#54ddc0",
+    },
+  },
+
+  // ==================== Sky Blue Theme ====================
+  skyblue: {
+    light: {
+      name: "Sky Blue",
+      primary: "#00658f",
+      primaryDark: "#00324d",
+      primaryLight: "#0088bf",
+      background: "#f0f7fc",
+      surface: "#f0f7fc",
+      surfaceSecondary: "#ffffff",
+      surfaceAlt: "#dfeff7",
+      textPrimary: "#001d2e",
+      textDark: "#001d2e",
+      textSecondary: "#3d4c55",
+      textMuted: "#6f7d87",
+      textInverse: "#ffffff",
+      border: "#bcc9d1",
+      borderLight: "#d9e3ea",
+      divider: "#bcc9d1",
+      borderNeutral: "#dfeff7",
+      success: "#00658f",
+      warning: "#7e5e00",
+      error: "#ba1a1a",
+      info: "#006684",
+      tabBar: "#dfeff7",
+      tabActive: "#00658f",
+      tabInactive: "#3d4c55",
+      card: "#f0f7fc",
+      cardSecondary: "#dfeff7",
+      inputBackground: "#dfeff7",
+      inputBorder: "#6f7d87",
+      inputPlaceholder: "#6f7d87",
+      overlay: "rgba(0, 29, 46, 0.35)",
+      present: "#00658f",
+      absent: "#ba1a1a",
+      late: "#7e5e00",
+      noticeInfo: "#006684",
+      noticeUrgent: "#ba1a1a",
+      assignmentPending: "#7e5e00",
+      assignmentSubmitted: "#00658f",
+    },
+    dark: {
+      name: "Sky Blue",
+      primary: "#86cfff",
+      primaryDark: "#004a6b",
+      primaryLight: "#bae1ff",
+      background: "#101418",
+      surface: "#101418",
+      surfaceSecondary: "#1c2228",
+      surfaceAlt: "#161c21",
+      textPrimary: "#e2e3e5",
+      textDark: "#e2e3e5",
+      textSecondary: "#c1c7cb",
+      textMuted: "#8f969b",
+      textInverse: "#001d2e",
+      border: "#3d4c55",
+      borderLight: "#26333b",
+      divider: "#3d4c55",
+      borderNeutral: "#1c2228",
+      success: "#86cfff",
+      warning: "#ffb961",
+      error: "#ffb4ab",
+      info: "#66d3ff",
+      tabBar: "#161c21",
+      tabActive: "#86cfff",
+      tabInactive: "#8f969b",
+      card: "#1c2228",
+      cardSecondary: "#232a31",
+      inputBackground: "#1c2228",
+      inputBorder: "#8f969b",
+      inputPlaceholder: "#8f969b",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      present: "#86cfff",
+      absent: "#ffb4ab",
+      late: "#ffb961",
+      noticeInfo: "#66d3ff",
+      noticeUrgent: "#ffb4ab",
+      assignmentPending: "#ffb961",
+      assignmentSubmitted: "#86cfff",
+    },
+  },
+
+  // ==================== Purple Theme ====================
+  purple: {
+    light: {
+      name: "Purple",
+      primary: "#8d4ea3",
+      primaryDark: "#4a1a5e",
+      primaryLight: "#b070c5",
+      background: "#f8f2fa",
+      surface: "#f8f2fa",
+      surfaceSecondary: "#ffffff",
+      surfaceAlt: "#f2e6f5",
+      textPrimary: "#24132b",
+      textDark: "#24132b",
+      textSecondary: "#55485a",
+      textMuted: "#85798a",
+      textInverse: "#ffffff",
+      border: "#cdbfd2",
+      borderLight: "#e6d9ea",
+      divider: "#cdbfd2",
+      borderNeutral: "#f2e6f5",
+      success: "#8d4ea3",
+      warning: "#7e5e00",
+      error: "#ba1a1a",
+      info: "#006684",
+      tabBar: "#f2e6f5",
+      tabActive: "#8d4ea3",
+      tabInactive: "#55485a",
+      card: "#f8f2fa",
+      cardSecondary: "#f2e6f5",
+      inputBackground: "#f2e6f5",
+      inputBorder: "#85798a",
+      inputPlaceholder: "#85798a",
+      overlay: "rgba(36, 19, 43, 0.35)",
+      present: "#8d4ea3",
+      absent: "#ba1a1a",
+      late: "#7e5e00",
+      noticeInfo: "#006684",
+      noticeUrgent: "#ba1a1a",
+      assignmentPending: "#7e5e00",
+      assignmentSubmitted: "#8d4ea3",
+    },
+    dark: {
+      name: "Purple",
+      primary: "#d78eed",
+      primaryDark: "#6a2d80",
+      primaryLight: "#ecb8fc",
+      background: "#18111b",
+      surface: "#18111b",
+      surfaceSecondary: "#261e2a",
+      surfaceAlt: "#1f1822",
+      textPrimary: "#efe2f3",
+      textDark: "#efe2f3",
+      textSecondary: "#cec0d2",
+      textMuted: "#a592ab",
+      textInverse: "#24132b",
+      border: "#55485a",
+      borderLight: "#352e38",
+      divider: "#55485a",
+      borderNeutral: "#261e2a",
+      success: "#d78eed",
+      warning: "#ffb961",
+      error: "#ffb4ab",
+      info: "#66d3ff",
+      tabBar: "#1f1822",
+      tabActive: "#d78eed",
+      tabInactive: "#a592ab",
+      card: "#261e2a",
+      cardSecondary: "#2e2633",
+      inputBackground: "#261e2a",
+      inputBorder: "#a592ab",
+      inputPlaceholder: "#a592ab",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      present: "#d78eed",
+      absent: "#ffb4ab",
+      late: "#ffb961",
+      noticeInfo: "#66d3ff",
+      noticeUrgent: "#ffb4ab",
+      assignmentPending: "#ffb961",
+      assignmentSubmitted: "#d78eed",
+    },
+  },
+
+  // ==================== Sunset/Orange Theme ====================
+  sunset: {
+    light: {
+      name: "Sunset",
+      primary: "#c75120",
+      primaryDark: "#782301",
+      primaryLight: "#f06c35",
+      background: "#fdf3ed",
+      surface: "#fdf3ed",
+      surfaceSecondary: "#ffffff",
+      surfaceAlt: "#fce4d8",
+      textPrimary: "#2c160c",
+      textDark: "#2c160c",
+      textSecondary: "#5e483f",
+      textMuted: "#88736a",
+      textInverse: "#ffffff",
+      border: "#d4c0b7",
+      borderLight: "#ecd9cf",
+      divider: "#d4c0b7",
+      borderNeutral: "#fce4d8",
+      success: "#c75120",
+      warning: "#7e5e00",
+      error: "#ba1a1a",
+      info: "#006684",
+      tabBar: "#fce4d8",
+      tabActive: "#c75120",
+      tabInactive: "#5e483f",
+      card: "#fdf3ed",
+      cardSecondary: "#fce4d8",
+      inputBackground: "#fce4d8",
+      inputBorder: "#88736a",
+      inputPlaceholder: "#88736a",
+      overlay: "rgba(44, 22, 12, 0.35)",
+      present: "#c75120",
+      absent: "#ba1a1a",
+      late: "#7e5e00",
+      noticeInfo: "#006684",
+      noticeUrgent: "#ba1a1a",
+      assignmentPending: "#7e5e00",
+      assignmentSubmitted: "#c75120",
+    },
+    dark: {
+      name: "Sunset",
+      primary: "#ffb593",
+      primaryDark: "#932e01",
+      primaryLight: "#ffd7c2",
+      background: "#1b110d",
+      surface: "#1b110d",
+      surfaceSecondary: "#2a1e19",
+      surfaceAlt: "#231814",
+      textPrimary: "#ede0dc",
+      textDark: "#ede0dc",
+      textSecondary: "#ccc1bc",
+      textMuted: "#a08c85",
+      textInverse: "#2c160c",
+      border: "#5e483f",
+      borderLight: "#3d2d26",
+      divider: "#5e483f",
+      borderNeutral: "#2a1e19",
+      success: "#ffb593",
+      warning: "#ffb961",
+      error: "#ffb4ab",
+      info: "#66d3ff",
+      tabBar: "#231814",
+      tabActive: "#ffb593",
+      tabInactive: "#a08c85",
+      card: "#2a1e19",
+      cardSecondary: "#352620",
+      inputBackground: "#2a1e19",
+      inputBorder: "#a08c85",
+      inputPlaceholder: "#a08c85",
+      overlay: "rgba(0, 0, 0, 0.5)",
+      present: "#ffb593",
+      absent: "#ffb4ab",
+      late: "#ffb961",
+      noticeInfo: "#66d3ff",
+      noticeUrgent: "#ffb4ab",
+      assignmentPending: "#ffb961",
+      assignmentSubmitted: "#ffb593",
+    },
+  },
 };
 
-export type AppColors = typeof LightColors;
+export const LightColors = Themes.green.light;
+export const DarkColors = Themes.green.dark;
+export type AppColors = ColorSet;

@@ -4,7 +4,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Switch,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,14 +12,24 @@ import { Spacing } from "../theme/spacing";
 import { Typography } from "../theme/typography";
 import { Radius } from "../theme/radius";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ThemeKey, Themes } from "../theme/colors";
+
+const THEME_OPTIONS: { key: ThemeKey; label: string; color: string }[] = [
+  { key: "green", label: "Green", color: "#386b01" },
+  { key: "pink", label: "Sweet Pink", color: "#a13d5c" },
+  { key: "pista", label: "Pista", color: "#007a65" },
+  { key: "skyblue", label: "Sky Blue", color: "#00658f" },
+  { key: "purple", label: "Purple", color: "#8d4ea3" },
+  { key: "sunset", label: "Sunset", color: "#c75120" },
+];
 
 export default function SettingsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, themeKey, setThemeKey } = useTheme();
 
   const handleClearAllData = () => {
     Alert.alert(
       "Clear All Data",
-      "Are you sure? This will delete all goals and timer tasks permanently.",
+      "This will delete all goals and timer tasks permanently.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -28,7 +37,7 @@ export default function SettingsScreen() {
           style: "destructive",
           onPress: async () => {
             await AsyncStorage.clear();
-            Alert.alert("Done", "All data has been cleared. Restart the app to see changes.");
+            Alert.alert("Done", "All data has been cleared.");
           },
         },
       ]
@@ -78,13 +87,57 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
-          <Switch
-            value={isDark}
-            trackColor={{ false: colors.border, true: colors.primary }}
-            thumbColor={colors.surfaceSecondary}
-            disabled
-          />
         </View>
+      </View>
+
+      {/* Color Themes */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+        COLOR THEME
+      </Text>
+      <View
+        style={[
+          styles.section,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.borderLight,
+          },
+        ]}
+      >
+        {THEME_OPTIONS.map((option, index) => {
+          const isActive = themeKey === option.key;
+          return (
+            <TouchableOpacity
+              key={option.key}
+              style={[
+                styles.themeRow,
+                index < THEME_OPTIONS.length - 1 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.borderLight,
+                },
+              ]}
+              onPress={() => setThemeKey(option.key)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.themeLeft}>
+                <View
+                  style={[styles.themeDot, { backgroundColor: option.color }]}
+                />
+                <Text
+                  style={[styles.themeLabel, { color: colors.textPrimary }]}
+                >
+                  {option.label}
+                </Text>
+              </View>
+              {isActive && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={22}
+                  color={colors.primary}
+                />
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Data Management */}
@@ -191,7 +244,7 @@ export default function SettingsScreen() {
           <View style={styles.featureRow}>
             <Ionicons name="checkmark-circle" size={16} color={colors.success} />
             <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-              Dark/Light theme support
+              6 color themes to choose from
             </Text>
           </View>
           <View style={styles.featureRow}>
@@ -257,6 +310,27 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginHorizontal: Spacing.lg,
+  },
+  themeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  themeLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  themeDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
+  themeLabel: {
+    fontSize: Typography.body.fontSize,
+    fontWeight: "500",
   },
   aboutContent: {
     alignItems: "center",
